@@ -4,7 +4,7 @@
 
 from datetime import datetime
 from itertools import chain
-from decimal import Decimal
+from decimal import Decimal,ROUND_HALF_UP
 from collections import Counter
 import random
 
@@ -17,13 +17,15 @@ RTYPE = {1: '单人间', 2: '标准间', 3: '商务间', 4: '豪华间'}
 
 # 生成当前时间
 def maker_datetime():
+    # 将datetime格式化去掉毫秒
     now_time = datetime.now().replace(microsecond=0)
     return now_time
 
 
 # 金额格式化(四舍五入,保留两位小数)
 def number_round(value):
-    return Decimal(value).quantize(Decimal("0.00"))
+    # 将传入的字符串数据(类数字)进行是四舍五入计算,并保留两位小数点
+    return Decimal(value).quantize(Decimal("0.00"), rounding=ROUND_HALF_UP)
 
 
 # 日期转换函数
@@ -89,7 +91,7 @@ def find_room(sock, rtype, state_1, state_2):
     if data != 'FAIL':
 
         result = eval(data)
-        # 将二维元组转换为列表
+        # 将二维元组组合为一维元组,并转换为列表
         rnumber_list = list(chain.from_iterable(result))
 
         i = 0
@@ -128,7 +130,7 @@ def alter_order_state(sock, state, order_num, date, ulog):
         return False
 
 
-# 　选择房型房价(为省事,我把房型房价写死了...不建议)
+# 　选择房型房价(为省事,我把房型房价写死了...后续再进行优化)
 def choose_room_type_price():
     # sock.send(b"CRTP1")
     # data = sock.recv(1024 * 10).decode()
@@ -565,6 +567,7 @@ def show_room_availability(sock, user_name):
     print(result)
     # 所有房型及房量
     total = Counter(dict(eval(result[0])))
+    print(total)
     # 预订所占房型及房量
     reserve = Counter('0')
     # 入住所占房型及房量
